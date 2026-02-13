@@ -9,12 +9,12 @@ defineEmits<{ click: [] }>()
   <q-card flat bordered class="member-card" @click="$emit('click')">
     <q-card-section class="column items-center text-center q-pa-sm">
       <q-avatar size="64px" class="q-mb-xs">
-        <img v-if="member.politician.picture" :src="member.politician.picture" :alt="member.politician.name" />
+        <img v-if="member.picture" :src="member.picture" :alt="member.name" />
         <q-icon v-else name="person" size="40px" color="grey-5" />
       </q-avatar>
-      <div class="text-subtitle2 ellipsis-2-lines">{{ member.politician.name }}</div>
-      <div v-if="member.clubMember" class="text-caption text-grey">
-        {{ member.clubMember.club.name }}
+      <div class="text-subtitle2 ellipsis-2-lines">{{ member.name }}</div>
+      <div v-if="member.club" class="text-caption text-grey">
+        {{ member.club.name }}
       </div>
     </q-card-section>
   </q-card>

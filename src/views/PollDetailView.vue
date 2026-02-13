@@ -68,15 +68,12 @@ onMounted(async () => {
           <q-item v-for="vote in group.votes" :key="vote.councilMember.ref">
             <q-item-section avatar>
               <q-avatar size="32px">
-                <img
-                  v-if="vote.councilMember.politician?.picture"
-                  :src="vote.councilMember.politician.picture"
-                />
+                <img v-if="vote.councilMember.picture" :src="vote.councilMember.picture" />
                 <q-icon v-else name="person" size="20px" color="grey-5" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
-              <q-item-label>{{ vote.councilMember.politician?.name || vote.councilMember.name }}</q-item-label>
+              <q-item-label>{{ vote.councilMember.name }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>

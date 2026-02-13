@@ -44,58 +44,34 @@ export interface Vote {
 export interface CouncilMemberRef {
   ref: string
   name: string
-  politician: PoliticianRef
-}
-
-export interface PoliticianRef {
-  ref: string
-  name: string
-  titles: string | null
   picture: string | null
 }
 
 export interface CouncilMember {
   ref: string
-  politician: Politician
-  season: Season
-  town: Town
+  name: string
+  title: string | null
+  picture: string | null
+  email: string | null
+  phone: string | null
   otherFunctions: string | null
-  description: string | null
-  clubMember: ClubMemberRef | null
+  nominee: string[]
+  club: ClubInfo | null
+}
+
+export interface ClubInfo {
+  ref: string
+  name: string
+  season: string
+  position: string
 }
 
 export interface Politician {
-  ref: string
   name: string
   titles: string | null
   picture: string | null
   email: string | null
   phone: string | null
-  partyNominees: PartyNominee[]
-  councilMembers: CouncilMemberSummary[]
-}
-
-export interface CouncilMemberSummary {
-  ref: string
-  season: Season
-  clubMember: ClubMemberRef | null
-}
-
-export interface ClubMemberRef {
-  club: { ref: string; name: string }
-}
-
-export interface PartyNominee {
-  party: { ref: string; name: string }
-  season?: Season
-}
-
-export interface Club {
-  ref: string
-  name: string
-}
-
-export interface Party {
-  ref: string
-  name: string
+  partyNominees: string[]
+  club: string | null
 }

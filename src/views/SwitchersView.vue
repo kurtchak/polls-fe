@@ -19,16 +19,8 @@ onMounted(async () => {
   }
 })
 
-function parties(p: Politician): string[] {
-  return [...new Set(p.partyNominees?.map(n => n.party.name) ?? [])]
-}
-
-function clubs(p: Politician): string[] {
-  return [...new Set(
-    p.councilMembers
-      ?.filter(cm => cm.clubMember)
-      .map(cm => cm.clubMember!.club.name) ?? []
-  )]
+function uniqueParties(p: Politician): string[] {
+  return [...new Set(p.partyNominees ?? [])]
 }
 </script>
 
@@ -45,7 +37,7 @@ function clubs(p: Politician): string[] {
 
     <q-list v-else bordered separator>
       <template v-if="tab === 'party'">
-        <q-item v-for="p in partySwitchers" :key="p.ref">
+        <q-item v-for="(p, idx) in partySwitchers" :key="idx">
           <q-item-section avatar>
             <q-avatar size="40px">
               <img v-if="p.picture" :src="p.picture" />
@@ -56,7 +48,7 @@ function clubs(p: Politician): string[] {
             <q-item-label>{{ p.name }}</q-item-label>
             <q-item-label caption>
               <q-chip
-                v-for="(party, i) in parties(p)"
+                v-for="(party, i) in uniqueParties(p)"
                 :key="i"
                 dense
                 size="sm"
@@ -73,7 +65,7 @@ function clubs(p: Politician): string[] {
       </template>
 
       <template v-else>
-        <q-item v-for="p in clubSwitchers" :key="p.ref">
+        <q-item v-for="(p, idx) in clubSwitchers" :key="idx">
           <q-item-section avatar>
             <q-avatar size="40px">
               <img v-if="p.picture" :src="p.picture" />
@@ -82,16 +74,8 @@ function clubs(p: Politician): string[] {
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ p.name }}</q-item-label>
-            <q-item-label caption>
-              <q-chip
-                v-for="(club, i) in clubs(p)"
-                :key="i"
-                dense
-                size="sm"
-                color="accent"
-                text-color="white"
-                :label="club"
-              />
+            <q-item-label v-if="p.club" caption class="text-grey">
+              Klub: {{ p.club }}
             </q-item-label>
           </q-item-section>
         </q-item>

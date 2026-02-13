@@ -29,7 +29,7 @@ function goToMembers() {
 }
 
 function goToSwitchers() {
-  router.push({ name: 'switchers' })
+  router.push({ name: 'switchers', params: { city: props.city } })
 }
 </script>
 

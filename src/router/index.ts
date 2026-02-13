@@ -33,9 +33,10 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/switchers',
+      path: '/:city/switchers',
       name: 'switchers',
       component: () => import('../views/SwitchersView.vue'),
+      props: true,
     },
   ],
 })

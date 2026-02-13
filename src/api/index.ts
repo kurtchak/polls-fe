@@ -31,12 +31,12 @@ export async function fetchMember(ref: string): Promise<CouncilMember> {
   return data
 }
 
-export async function fetchPartySwitchers(): Promise<Politician[]> {
-  const { data } = await api.get<Politician[]>('/politicians/party-switchers')
+export async function fetchPartySwitchers(city: string): Promise<Politician[]> {
+  const { data } = await api.get<Politician[]>(`/politicians/${city}/party-switchers`)
   return data
 }
 
-export async function fetchClubSwitchers(): Promise<Politician[]> {
-  const { data } = await api.get<Politician[]>('/politicians/club-switchers')
+export async function fetchClubSwitchers(city: string): Promise<Politician[]> {
+  const { data } = await api.get<Politician[]>(`/politicians/${city}/club-switchers`)
   return data
 }

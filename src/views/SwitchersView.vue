@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { fetchPartySwitchers, fetchClubSwitchers } from '../api'
 import type { Politician } from '../types'
 
+const props = defineProps<{ city: string }>()
+
 const tab = ref<'party' | 'club'>('party')
 const partySwitchers = ref<Politician[]>([])
 const clubSwitchers = ref<Politician[]>([])
@@ -11,7 +13,10 @@ const loading = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    const [ps, cs] = await Promise.all([fetchPartySwitchers(), fetchClubSwitchers()])
+    const [ps, cs] = await Promise.all([
+      fetchPartySwitchers(props.city),
+      fetchClubSwitchers(props.city),
+    ])
     partySwitchers.value = ps
     clubSwitchers.value = cs
   } finally {

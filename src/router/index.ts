@@ -18,7 +18,6 @@ const router = createRouter({
       path: '/polls/:ref',
       name: 'poll-detail',
       component: () => import('../views/PollDetailView.vue'),
-      props: true,
     },
     {
       path: '/:city/:institution/:season/members',
@@ -30,7 +29,6 @@ const router = createRouter({
       path: '/members/:ref',
       name: 'member-detail',
       component: () => import('../views/MemberDetailView.vue'),
-      props: true,
     },
     {
       path: '/:city/switchers',

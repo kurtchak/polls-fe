@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { fetchPoll } from '../api'
 import type { PollDetail } from '../types'
 import VoteBadge from '../components/VoteBadge.vue'
 import VoteBar from '../components/VoteBar.vue'
 
-const props = defineProps<{ ref: string }>()
+const route = useRoute()
+const pollRef = route.params.ref as string
 
 const poll = ref<PollDetail | null>(null)
 const loading = ref(false)
@@ -36,7 +38,7 @@ const hasVoters = computed(() => voteGroups.value.some(g => g.voters.length > 0)
 onMounted(async () => {
   loading.value = true
   try {
-    poll.value = await fetchPoll(props.ref)
+    poll.value = await fetchPoll(pollRef)
   } finally {
     loading.value = false
   }

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { fetchMember, fetchMemberVotes } from '../api'
 import type { CouncilMember, MemberVote } from '../types'
 import VoteBadge from '../components/VoteBadge.vue'
 
-const props = defineProps<{ ref: string }>()
+const route = useRoute()
+const memberRef = route.params.ref as string
 
 const member = ref<CouncilMember | null>(null)
 const votes = ref<MemberVote[]>([])
@@ -30,14 +32,14 @@ const voteSummary = computed(() => {
 onMounted(async () => {
   loading.value = true
   try {
-    member.value = await fetchMember(props.ref)
+    member.value = await fetchMember(memberRef)
   } finally {
     loading.value = false
   }
 
   votesLoading.value = true
   try {
-    votes.value = await fetchMemberVotes(props.ref)
+    votes.value = await fetchMemberVotes(memberRef)
   } finally {
     votesLoading.value = false
   }

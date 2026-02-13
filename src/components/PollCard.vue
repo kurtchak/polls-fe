@@ -11,7 +11,7 @@ defineEmits<{ click: [] }>()
   <q-card flat bordered class="poll-card q-mb-sm" @click="$emit('click')">
     <q-card-section>
       <div class="row items-center justify-between q-mb-xs">
-        <div class="text-subtitle2 col">{{ poll.name }}</div>
+        <div class="text-subtitle2 col">{{ poll.agendaItem?.name ?? poll.name }}</div>
         <VoteBadge :result="poll.result" />
       </div>
       <VoteBar :votes-count="poll.votesCount" :voters="poll.voters" />

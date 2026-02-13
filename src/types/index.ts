@@ -11,14 +11,24 @@ export interface Season {
 
 export interface VotesCount {
   absent: number
-  votedFor: number
-  votedAgainst: number
+  for: number
+  against: number
   abstain: number
-  notVoted: number
+  not: number
 }
 
 export type VoteResult = 'PASSED' | 'REJECTED'
 export type MajorityType = 'SIMPLE_MAJORITY' | 'THREE_FIFTHS_PRESENT' | 'THREE_FIFTHS_ALL' | 'ABSOLUTE_MAJORITY'
+
+export interface AgendaItemRef {
+  ref: string
+  name: string
+  meeting?: {
+    ref: string
+    name: string
+    date: string
+  }
+}
 
 export interface Poll {
   ref: string
@@ -28,6 +38,7 @@ export interface Poll {
   votesCount: VotesCount
   result: VoteResult | null
   majorityType: MajorityType
+  agendaItem?: AgendaItemRef
 }
 
 export interface PollDetail extends Poll {

@@ -10,8 +10,10 @@ const props = defineProps<{ ref: string }>()
 const poll = ref<PollDetail | null>(null)
 const loading = ref(false)
 
+const hasVotes = computed(() => poll.value?.votes && poll.value.votes.length > 0)
+
 const voteGroups = computed(() => {
-  if (!poll.value) return []
+  if (!poll.value?.votes) return []
   const order: VoteChoice[] = ['VOTED_FOR', 'VOTED_AGAINST', 'ABSTAIN', 'NOT_VOTED', 'ABSENT']
   const labels: Record<VoteChoice, string> = {
     VOTED_FOR: 'Za',
@@ -59,24 +61,29 @@ onMounted(async () => {
 
       <VoteBar :votes-count="poll.votesCount" :voters="poll.voters" class="q-mb-md" />
 
-      <div v-for="group in voteGroups" :key="group.choice" class="q-mb-md">
-        <div class="text-subtitle1 q-mb-xs">
-          <q-badge :color="group.color" :label="group.label" />
-          <span class="text-caption text-grey q-ml-sm">({{ group.votes.length }})</span>
+      <template v-if="hasVotes">
+        <div v-for="group in voteGroups" :key="group.choice" class="q-mb-md">
+          <div class="text-subtitle1 q-mb-xs">
+            <q-badge :color="group.color" :label="group.label" />
+            <span class="text-caption text-grey q-ml-sm">({{ group.votes.length }})</span>
+          </div>
+          <q-list dense bordered separator>
+            <q-item v-for="vote in group.votes" :key="vote.councilMember?.ref">
+              <q-item-section avatar>
+                <q-avatar size="32px">
+                  <img v-if="vote.councilMember?.picture" :src="vote.councilMember.picture" />
+                  <q-icon v-else name="person" size="20px" color="grey-5" />
+                </q-avatar>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ vote.councilMember?.name ?? 'Neznámy' }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
         </div>
-        <q-list dense bordered separator>
-          <q-item v-for="vote in group.votes" :key="vote.councilMember.ref">
-            <q-item-section avatar>
-              <q-avatar size="32px">
-                <img v-if="vote.councilMember.picture" :src="vote.councilMember.picture" />
-                <q-icon v-else name="person" size="20px" color="grey-5" />
-              </q-avatar>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ vote.councilMember.name }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
+      </template>
+      <div v-else class="text-center text-grey q-mt-md">
+        Individuálne hlasy nie sú k dispozícii
       </div>
     </template>
   </q-page>

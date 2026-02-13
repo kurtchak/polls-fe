@@ -9,10 +9,10 @@ const segments = computed(() => {
   if (!total) return []
   const v = props.votesCount
   return [
-    { color: '#4caf50', value: v.votedFor, label: `Za: ${v.votedFor}` },
-    { color: '#f44336', value: v.votedAgainst, label: `Proti: ${v.votedAgainst}` },
+    { color: '#4caf50', value: v.for, label: `Za: ${v.for}` },
+    { color: '#f44336', value: v.against, label: `Proti: ${v.against}` },
     { color: '#ff9800', value: v.abstain, label: `Zdržal sa: ${v.abstain}` },
-    { color: '#9e9e9e', value: v.notVoted, label: `Nehlasoval: ${v.notVoted}` },
+    { color: '#9e9e9e', value: v.not, label: `Nehlasoval: ${v.not}` },
     { color: '#e0e0e0', value: v.absent, label: `Neprítomný: ${v.absent}` },
   ].filter(s => s.value > 0)
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { fetchPoll } from '../api'
-import type { PollDetail, VoteChoice } from '../types'
+import type { PollDetail } from '../types'
 import VoteBadge from '../components/VoteBadge.vue'
 import VoteBar from '../components/VoteBar.vue'
 
@@ -10,34 +10,28 @@ const props = defineProps<{ ref: string }>()
 const poll = ref<PollDetail | null>(null)
 const loading = ref(false)
 
-const hasVotes = computed(() => poll.value?.votes && poll.value.votes.length > 0)
+type VoteKey = 'for' | 'against' | 'abstain' | 'not' | 'absent'
 
 const voteGroups = computed(() => {
   if (!poll.value?.votes) return []
-  const order: VoteChoice[] = ['VOTED_FOR', 'VOTED_AGAINST', 'ABSTAIN', 'NOT_VOTED', 'ABSENT']
-  const labels: Record<VoteChoice, string> = {
-    VOTED_FOR: 'Za',
-    VOTED_AGAINST: 'Proti',
-    ABSTAIN: 'Zdržal sa',
-    NOT_VOTED: 'Nehlasoval',
-    ABSENT: 'Neprítomný',
-  }
-  const colors: Record<VoteChoice, string> = {
-    VOTED_FOR: 'positive',
-    VOTED_AGAINST: 'negative',
-    ABSTAIN: 'warning',
-    NOT_VOTED: 'grey-6',
-    ABSENT: 'grey-4',
-  }
-  return order
-    .map(choice => ({
-      choice,
-      label: labels[choice],
-      color: colors[choice],
-      votes: poll.value!.votes.filter(v => v.voted === choice),
+  const v = poll.value.votes
+  const groups: { key: VoteKey; label: string; color: string }[] = [
+    { key: 'for', label: 'Za', color: 'positive' },
+    { key: 'against', label: 'Proti', color: 'negative' },
+    { key: 'abstain', label: 'Zdržal sa', color: 'warning' },
+    { key: 'not', label: 'Nehlasoval', color: 'grey-6' },
+    { key: 'absent', label: 'Neprítomný', color: 'grey-4' },
+  ]
+  return groups
+    .map(g => ({
+      ...g,
+      voters: v[g.key]?.voters ?? [],
+      count: v[g.key]?.count ?? 0,
     }))
-    .filter(g => g.votes.length > 0)
+    .filter(g => g.count > 0)
 })
+
+const hasVoters = computed(() => voteGroups.value.some(g => g.voters.length > 0))
 
 onMounted(async () => {
   loading.value = true
@@ -55,28 +49,32 @@ onMounted(async () => {
 
     <template v-else-if="poll">
       <div class="row items-start justify-between q-mb-sm">
-        <div class="text-h6 col">{{ poll.name }}</div>
+        <div class="text-h6 col">{{ poll.agendaItem?.name ?? poll.name }}</div>
         <VoteBadge :result="poll.result" />
+      </div>
+
+      <div v-if="poll.agendaItem?.meeting" class="text-caption text-grey q-mb-sm">
+        {{ poll.agendaItem.meeting.name }} | {{ poll.agendaItem.meeting.date }}
       </div>
 
       <VoteBar :votes-count="poll.votesCount" :voters="poll.voters" class="q-mb-md" />
 
-      <template v-if="hasVotes">
-        <div v-for="group in voteGroups" :key="group.choice" class="q-mb-md">
+      <template v-if="hasVoters">
+        <div v-for="group in voteGroups" :key="group.key" class="q-mb-md">
           <div class="text-subtitle1 q-mb-xs">
             <q-badge :color="group.color" :label="group.label" />
-            <span class="text-caption text-grey q-ml-sm">({{ group.votes.length }})</span>
+            <span class="text-caption text-grey q-ml-sm">({{ group.count }})</span>
           </div>
           <q-list dense bordered separator>
-            <q-item v-for="vote in group.votes" :key="vote.councilMember?.ref">
+            <q-item v-for="voter in group.voters" :key="voter.ref">
               <q-item-section avatar>
                 <q-avatar size="32px">
-                  <img v-if="vote.councilMember?.picture" :src="vote.councilMember.picture" />
+                  <img v-if="voter.picture" :src="voter.picture" />
                   <q-icon v-else name="person" size="20px" color="grey-5" />
                 </q-avatar>
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ vote.councilMember?.name ?? 'Neznámy' }}</q-item-label>
+                <q-item-label>{{ voter.name }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>

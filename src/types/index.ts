@@ -41,15 +41,21 @@ export interface Poll {
   agendaItem?: AgendaItemRef
 }
 
-export interface PollDetail extends Poll {
-  votes: Vote[]
+export interface VoteGroup {
+  voters: CouncilMemberRef[]
+  count: number
 }
 
-export type VoteChoice = 'VOTED_FOR' | 'VOTED_AGAINST' | 'ABSTAIN' | 'NOT_VOTED' | 'ABSENT'
+export interface VotesGrouped {
+  for: VoteGroup
+  against: VoteGroup
+  not: VoteGroup
+  abstain: VoteGroup
+  absent: VoteGroup
+}
 
-export interface Vote {
-  voted: VoteChoice
-  councilMember: CouncilMemberRef
+export interface PollDetail extends Poll {
+  votes: VotesGrouped
 }
 
 export interface CouncilMemberRef {

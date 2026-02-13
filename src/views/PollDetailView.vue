@@ -66,7 +66,12 @@ onMounted(async () => {
             <span class="text-caption text-grey q-ml-sm">({{ group.count }})</span>
           </div>
           <q-list dense bordered separator>
-            <q-item v-for="voter in group.voters" :key="voter.ref">
+            <q-item
+              v-for="voter in group.voters"
+              :key="voter.ref"
+              clickable
+              :to="{ name: 'member-detail', params: { ref: voter.ref } }"
+            >
               <q-item-section avatar>
                 <q-avatar size="32px">
                   <img v-if="voter.picture" :src="voter.picture" />
@@ -75,6 +80,9 @@ onMounted(async () => {
               </q-item-section>
               <q-item-section>
                 <q-item-label>{{ voter.name }}</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-icon name="chevron_right" color="grey-5" />
               </q-item-section>
             </q-item>
           </q-list>

@@ -83,6 +83,16 @@ export interface ClubInfo {
   position: string
 }
 
+export interface MemberVote {
+  voted: 'VOTED_FOR' | 'VOTED_AGAINST' | 'ABSTAIN' | 'NOT_VOTED' | 'ABSENT'
+  poll: {
+    ref: string
+    name: string
+    result: VoteResult | null
+    agendaItem?: AgendaItemRef
+  }
+}
+
 export interface Politician {
   name: string
   titles: string | null

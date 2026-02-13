@@ -1,5 +1,5 @@
 import api from './client'
-import type { Town, Season, Poll, PollDetail, CouncilMember, Politician } from '../types'
+import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote } from '../types'
 
 export async function fetchTowns(): Promise<Town[]> {
   const { data } = await api.get<Town[]>('/cities')
@@ -28,6 +28,11 @@ export async function fetchMembers(city: string, institution: string, season: st
 
 export async function fetchMember(ref: string): Promise<CouncilMember> {
   const { data } = await api.get<CouncilMember>(`/members/${ref}`)
+  return data
+}
+
+export async function fetchMemberVotes(ref: string): Promise<MemberVote[]> {
+  const { data } = await api.get<MemberVote[]>(`/members/${ref}/votes`)
   return data
 }
 

@@ -1,12 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { fetchMember } from '../api'
-import type { CouncilMember } from '../types'
+import { ref, computed, onMounted } from 'vue'
+import { fetchMember, fetchMemberVotes } from '../api'
+import type { CouncilMember, MemberVote } from '../types'
+import VoteBadge from '../components/VoteBadge.vue'
 
 const props = defineProps<{ ref: string }>()
 
 const member = ref<CouncilMember | null>(null)
+const votes = ref<MemberVote[]>([])
 const loading = ref(false)
+const votesLoading = ref(false)
+
+const voteChoiceLabel: Record<string, { label: string; color: string }> = {
+  VOTED_FOR: { label: 'Za', color: 'positive' },
+  VOTED_AGAINST: { label: 'Proti', color: 'negative' },
+  ABSTAIN: { label: 'Zdržal sa', color: 'warning' },
+  NOT_VOTED: { label: 'Nehlasoval', color: 'grey-6' },
+  ABSENT: { label: 'Neprítomný', color: 'grey-4' },
+}
+
+const voteSummary = computed(() => {
+  const counts = { VOTED_FOR: 0, VOTED_AGAINST: 0, ABSTAIN: 0, NOT_VOTED: 0, ABSENT: 0 }
+  for (const v of votes.value) {
+    counts[v.voted] = (counts[v.voted] || 0) + 1
+  }
+  return counts
+})
 
 onMounted(async () => {
   loading.value = true
@@ -14,6 +33,13 @@ onMounted(async () => {
     member.value = await fetchMember(props.ref)
   } finally {
     loading.value = false
+  }
+
+  votesLoading.value = true
+  try {
+    votes.value = await fetchMemberVotes(props.ref)
+  } finally {
+    votesLoading.value = false
   }
 })
 </script>
@@ -78,6 +104,54 @@ onMounted(async () => {
           :label="party"
         />
       </template>
+
+      <!-- Voting history -->
+      <div class="text-subtitle1 q-mt-lg q-mb-sm">
+        Hlasovania
+        <span v-if="votes.length" class="text-caption text-grey">({{ votes.length }})</span>
+      </div>
+
+      <q-spinner-dots v-if="votesLoading" size="30px" color="primary" />
+
+      <template v-else-if="votes.length">
+        <!-- Summary chips -->
+        <div class="q-mb-md q-gutter-xs">
+          <q-badge
+            v-for="(info, key) in voteChoiceLabel"
+            :key="key"
+            :color="info.color"
+            :label="`${info.label}: ${voteSummary[key as keyof typeof voteSummary]}`"
+            class="q-pa-xs"
+          />
+        </div>
+
+        <q-list bordered separator>
+          <q-item
+            v-for="(vote, i) in votes"
+            :key="i"
+            clickable
+            :to="{ name: 'poll-detail', params: { ref: vote.poll.ref } }"
+          >
+            <q-item-section>
+              <q-item-label>{{ vote.poll.agendaItem?.name ?? vote.poll.name }}</q-item-label>
+              <q-item-label caption>
+                {{ vote.poll.agendaItem?.meeting?.date }}
+              </q-item-label>
+            </q-item-section>
+            <q-item-section side class="row items-center no-wrap q-gutter-xs">
+              <q-badge
+                :color="voteChoiceLabel[vote.voted]?.color ?? 'grey'"
+                :label="voteChoiceLabel[vote.voted]?.label ?? vote.voted"
+              />
+              <VoteBadge :result="vote.poll.result" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </template>
+
+      <div v-else class="text-grey">
+        Žiadne hlasovania
+      </div>
     </template>
   </q-page>
 </template>

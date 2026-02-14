@@ -19,6 +19,10 @@ onMounted(async () => {
   loading.value = true
   try {
     towns.value = await fetchTowns()
+    if (nav.selectedTown) {
+      seasons.value = await fetchSeasons(nav.selectedTown.ref, nav.institution)
+      step.value = 'season'
+    }
   } finally {
     loading.value = false
   }

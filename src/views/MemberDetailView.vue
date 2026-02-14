@@ -66,7 +66,7 @@ onMounted(async () => {
       <!-- Header: photo+meta left, name+nominations right -->
       <div class="row q-mb-md q-gutter-md items-start">
         <!-- Left column: photo, season, club, contact -->
-        <div class="col-auto column items-center" style="min-width: 110px">
+        <div class="col-3 column items-center" style="max-width: 33%">
           <q-avatar size="100px" class="q-mb-xs">
             <img v-if="member.picture" :src="member.picture" />
             <q-icon v-else name="person" size="60px" color="grey-5" />
@@ -93,7 +93,7 @@ onMounted(async () => {
               icon="email"
               color="primary"
               :href="`mailto:${member.email}`"
-              tag="a"
+              target="_blank"
             >
               <q-tooltip>{{ member.email }}</q-tooltip>
             </q-btn>
@@ -103,7 +103,7 @@ onMounted(async () => {
               icon="phone"
               color="primary"
               :href="`tel:${member.phone}`"
-              tag="a"
+              target="_blank"
             >
               <q-tooltip>{{ member.phone }}</q-tooltip>
             </q-btn>

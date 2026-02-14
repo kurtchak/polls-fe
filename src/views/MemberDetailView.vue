@@ -29,6 +29,18 @@ const voteSummary = computed(() => {
   return counts
 })
 
+const uniqueNominees = computed(() =>
+  member.value?.nominee ? [...new Set(member.value.nominee)] : []
+)
+
+const functions = computed(() => {
+  if (!member.value?.otherFunctions) return []
+  return member.value.otherFunctions
+    .split(',')
+    .map(f => f.trim())
+    .filter((f, i, arr) => f.length > 0 && arr.indexOf(f) === i)
+})
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -51,60 +63,87 @@ onMounted(async () => {
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
 
     <template v-else-if="member">
-      <div class="column items-center q-mb-md">
-        <q-avatar size="120px" class="q-mb-sm">
+      <!-- Header: photo + info side by side -->
+      <div class="row q-mb-md q-gutter-md items-start">
+        <q-avatar size="100px" class="col-auto">
           <img v-if="member.picture" :src="member.picture" />
-          <q-icon v-else name="person" size="80px" color="grey-5" />
+          <q-icon v-else name="person" size="60px" color="grey-5" />
         </q-avatar>
-        <div class="text-h5">{{ member.name }}</div>
-        <div v-if="member.title" class="text-caption text-grey">
-          {{ member.title }}
+
+        <div class="col">
+          <div class="text-h5 q-mb-none">{{ member.name }}</div>
+          <div v-if="member.title" class="text-caption text-grey">
+            {{ member.title }}
+          </div>
+
+          <!-- Season -->
+          <q-badge
+            v-if="member.club?.season"
+            color="blue-grey"
+            :label="`Obdobie ${member.club.season}`"
+            class="q-mt-xs"
+          />
+
+          <!-- Club & Party chips -->
+          <div class="q-mt-sm q-gutter-xs">
+            <q-chip
+              v-if="member.club"
+              dense
+              color="primary"
+              text-color="white"
+              icon="groups"
+              :label="member.club.name"
+            />
+            <q-chip
+              v-for="(party, i) in uniqueNominees"
+              :key="i"
+              dense
+              color="teal"
+              text-color="white"
+              icon="how_to_vote"
+              :label="party"
+            />
+          </div>
+
+          <!-- Email & Phone icons -->
+          <div class="q-mt-xs q-gutter-xs">
+            <q-btn
+              v-if="member.email"
+              flat dense round
+              icon="email"
+              color="primary"
+              :href="`mailto:${member.email}`"
+              tag="a"
+            >
+              <q-tooltip>{{ member.email }}</q-tooltip>
+            </q-btn>
+            <q-btn
+              v-if="member.phone"
+              flat dense round
+              icon="phone"
+              color="primary"
+              :href="`tel:${member.phone}`"
+              tag="a"
+            >
+              <q-tooltip>{{ member.phone }}</q-tooltip>
+            </q-btn>
+          </div>
         </div>
       </div>
 
-      <q-list bordered separator>
-        <q-item v-if="member.club">
-          <q-item-section avatar><q-icon name="groups" color="primary" /></q-item-section>
-          <q-item-section>
-            <q-item-label caption>Klub</q-item-label>
-            <q-item-label>{{ member.club.name }}</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item v-if="member.email">
-          <q-item-section avatar><q-icon name="email" color="primary" /></q-item-section>
-          <q-item-section>
-            <q-item-label caption>Email</q-item-label>
-            <q-item-label>{{ member.email }}</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item v-if="member.phone">
-          <q-item-section avatar><q-icon name="phone" color="primary" /></q-item-section>
-          <q-item-section>
-            <q-item-label caption>Telefón</q-item-label>
-            <q-item-label>{{ member.phone }}</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item v-if="member.otherFunctions">
-          <q-item-section avatar><q-icon name="work" color="primary" /></q-item-section>
-          <q-item-section>
-            <q-item-label caption>Funkcie</q-item-label>
-            <q-item-label>{{ member.otherFunctions }}</q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-
-      <template v-if="member.nominee?.length">
-        <div class="text-subtitle1 q-mt-md q-mb-sm">Nominácia</div>
-        <q-chip
-          v-for="(party, i) in [...new Set(member.nominee)]"
-          :key="i"
-          color="primary"
-          text-color="white"
-          :label="party"
-        />
+      <!-- Functions as chips -->
+      <template v-if="functions.length">
+        <div class="text-caption text-grey q-mb-xs">Funkcie</div>
+        <div class="q-gutter-xs q-mb-md">
+          <q-chip
+            v-for="(fn, i) in functions"
+            :key="i"
+            dense
+            outline
+            color="grey-8"
+            :label="fn"
+          />
+        </div>
       </template>
 
       <!-- Voting history -->

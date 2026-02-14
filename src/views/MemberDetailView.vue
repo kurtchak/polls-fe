@@ -136,8 +136,8 @@ onMounted(async () => {
           >
             <q-item-section>
               <q-item-label>{{ vote.poll.agendaItem?.name ?? vote.poll.name }}</q-item-label>
-              <q-item-label caption>
-                {{ vote.poll.agendaItem?.meeting?.date }}
+              <q-item-label v-if="vote.poll.agendaItem?.meeting" caption>
+                {{ vote.poll.agendaItem.meeting.name }} &middot; {{ vote.poll.agendaItem.meeting.date }}
               </q-item-label>
             </q-item-section>
             <q-item-section side class="row items-center no-wrap q-gutter-xs">

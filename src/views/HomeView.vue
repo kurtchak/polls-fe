@@ -85,8 +85,11 @@ function onSeasonClick(season: Season) {
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ season.name }}</q-item-label>
-            <q-item-label v-if="sync.status?.running && sync.status?.currentTown === nav.selectedTown?.ref && sync.status?.currentSeason === season.ref && sync.status?.currentPhase === 'meetings'" caption>
-              {{ sync.status.processedMeetings }} / {{ sync.status.totalMeetings }} zasadnutí
+            <q-item-label v-if="season.meetingCount || season.pollCount" caption>
+              {{ season.meetingCount }} zasadnutí, {{ season.pollCount }} hlasovaní
+            </q-item-label>
+            <q-item-label v-if="sync.status?.running && sync.status?.currentTown === nav.selectedTown?.ref && sync.status?.currentSeason === season.ref && sync.status?.currentPhase === 'meetings'" caption class="text-primary">
+              synchronizujem {{ sync.status.processedMeetings }} / {{ sync.status.totalMeetings }}
             </q-item-label>
           </q-item-section>
           <q-item-section v-if="sync.status?.running && sync.status?.currentTown === nav.selectedTown?.ref && sync.status?.currentSeason === season.ref" side>

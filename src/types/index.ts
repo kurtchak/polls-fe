@@ -7,6 +7,8 @@ export interface Town {
 export interface Season {
   ref: string
   name: string
+  meetingCount?: number
+  pollCount?: number
 }
 
 export interface VotesCount {

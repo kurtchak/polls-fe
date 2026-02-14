@@ -133,7 +133,7 @@ async function onSyncTown(townRef: string, event: Event) {
             <q-btn
               flat round dense icon="sync" size="sm" color="grey-6"
               @click="onSyncTown(town.ref, $event)"
-              :disable="sync.status?.running === true"
+              :loading="sync.status?.running && sync.status?.currentTown === town.ref"
             >
               <q-tooltip>Synchronizovať {{ town.name }}</q-tooltip>
             </q-btn>

@@ -41,7 +41,7 @@ async function onTrigger() {
     :icon="running ? 'sync' : 'cloud_done'"
     :class="{ 'sync-spinning': running }"
     @click="onTrigger"
-    :disable="running || triggering"
+    :disable="triggering"
   >
     <q-tooltip>{{ tooltip }}<template v-if="!running"><br>Click to sync</template></q-tooltip>
   </q-btn>

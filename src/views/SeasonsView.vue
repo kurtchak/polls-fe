@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fetchTowns, fetchSeasons } from '../api'
+import { fetchTowns, fetchSeasons, triggerSync } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
 import type { Season } from '../types'
@@ -32,6 +32,15 @@ onMounted(async () => {
   }
 })
 
+async function onSync() {
+  try {
+    await triggerSync(city)
+    sync.startPolling()
+  } catch {
+    // ignore
+  }
+}
+
 function onSeasonClick(season: Season) {
   nav.selectSeason(season)
   router.push({
@@ -46,7 +55,17 @@ function onSeasonClick(season: Season) {
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
 
     <template v-else>
-      <div class="text-h6 q-mb-md">Volebné obdobie</div>
+      <div class="row items-center q-mb-md">
+        <div class="text-h6">Volebné obdobie</div>
+        <q-space />
+        <q-btn
+          flat round icon="sync" color="primary"
+          :loading="sync.status?.running && sync.status?.currentTown === city"
+          @click="onSync"
+        >
+          <q-tooltip>Synchronizovať {{ city }}</q-tooltip>
+        </q-btn>
+      </div>
       <q-list class="home-list">
         <q-item v-for="season in seasons" :key="season.ref" clickable v-ripple @click="onSeasonClick(season)">
           <q-item-section avatar>

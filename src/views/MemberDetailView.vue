@@ -16,9 +16,17 @@ const votesLoading = ref(false)
 const voteChoiceLabel: Record<string, { label: string; color: string }> = {
   VOTED_FOR: { label: 'Za', color: 'positive' },
   VOTED_AGAINST: { label: 'Proti', color: 'negative' },
-  ABSTAIN: { label: 'Zdržal sa', color: 'warning' },
-  NOT_VOTED: { label: 'Nehlasoval', color: 'grey-6' },
-  ABSENT: { label: 'Neprítomný', color: 'grey-4' },
+  ABSTAIN: { label: 'Zdrž.', color: 'warning' },
+  NOT_VOTED: { label: 'Nehl.', color: 'grey-6' },
+  ABSENT: { label: 'Nepr.', color: 'grey-4' },
+}
+
+const voteChoiceFull: Record<string, string> = {
+  VOTED_FOR: 'Za',
+  VOTED_AGAINST: 'Proti',
+  ABSTAIN: 'Zdržal sa',
+  NOT_VOTED: 'Nehlasoval',
+  ABSENT: 'Neprítomný',
 }
 
 const voteSummary = computed(() => {
@@ -40,6 +48,13 @@ const functions = computed(() => {
     .map(f => f.trim())
     .filter((f, i, arr) => f.length > 0 && arr.indexOf(f) === i)
 })
+
+function shortMeeting(name: string): string {
+  return name
+    .replace(/Mestského zastupiteľstva mesta \S+/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 onMounted(async () => {
   loading.value = true
@@ -65,8 +80,8 @@ onMounted(async () => {
     <template v-else-if="member">
       <!-- Header: photo+meta left, name+nominations right -->
       <div class="row q-mb-md q-gutter-md items-start">
-        <!-- Left column: photo, season, club, contact -->
-        <div class="col-3 column items-center" style="max-width: 33%">
+        <!-- Left column: photo, season, contact -->
+        <div class="col-auto column items-center">
           <q-avatar size="100px" class="q-mb-xs">
             <img v-if="member.picture" :src="member.picture" />
             <q-icon v-else name="person" size="60px" color="grey-5" />
@@ -74,16 +89,7 @@ onMounted(async () => {
           <q-badge
             v-if="member.club?.season"
             color="blue-grey"
-            :label="`${member.club.season}`"
-            class="q-mb-xs"
-          />
-          <q-chip
-            v-if="member.club"
-            dense
-            color="primary"
-            text-color="white"
-            icon="groups"
-            :label="member.club.name"
+            :label="member.club.season"
             class="q-mb-xs"
           />
           <div class="q-gutter-xs row justify-center">
@@ -93,7 +99,6 @@ onMounted(async () => {
               icon="email"
               color="primary"
               :href="`mailto:${member.email}`"
-              target="_blank"
             >
               <q-tooltip>{{ member.email }}</q-tooltip>
             </q-btn>
@@ -103,19 +108,28 @@ onMounted(async () => {
               icon="phone"
               color="primary"
               :href="`tel:${member.phone}`"
-              target="_blank"
             >
               <q-tooltip>{{ member.phone }}</q-tooltip>
             </q-btn>
           </div>
         </div>
 
-        <!-- Right column: name, title, nominations -->
+        <!-- Right column: name, title, club, nominations, functions -->
         <div class="col">
           <div class="text-h5 q-mb-none">{{ member.name }}</div>
           <div v-if="member.title" class="text-caption text-grey">
             {{ member.title }}
           </div>
+
+          <q-chip
+            v-if="member.club"
+            dense
+            color="primary"
+            text-color="white"
+            icon="groups"
+            :label="member.club.name"
+            class="q-mt-xs"
+          />
 
           <template v-if="uniqueNominees.length">
             <div class="text-caption text-grey q-mt-sm q-mb-xs">Nominácie</div>
@@ -132,7 +146,6 @@ onMounted(async () => {
             </div>
           </template>
 
-          <!-- Functions as chips -->
           <template v-if="functions.length">
             <div class="text-caption text-grey q-mt-sm q-mb-xs">Funkcie</div>
             <div class="q-gutter-xs">
@@ -156,13 +169,13 @@ onMounted(async () => {
           <span v-if="votes.length" class="text-caption text-grey">({{ votes.length }})</span>
         </div>
         <q-space />
-        <div v-if="votes.length && !votesLoading" class="q-gutter-xs">
+        <div v-if="votes.length && !votesLoading" class="q-gutter-xs row no-wrap items-center">
           <q-badge
             v-for="(info, key) in voteChoiceLabel"
             :key="key"
             :color="info.color"
             :label="`${info.label}: ${voteSummary[key as keyof typeof voteSummary]}`"
-            class="q-pa-xs"
+            style="font-size: 10px; padding: 2px 4px"
           />
         </div>
       </div>
@@ -176,17 +189,21 @@ onMounted(async () => {
             :key="i"
             clickable
             :to="{ name: 'poll-detail', params: { ref: vote.poll.ref } }"
+            class="q-py-xs"
           >
             <q-item-section>
-              <q-item-label>{{ vote.poll.agendaItem?.name ?? vote.poll.name }}</q-item-label>
-              <q-item-label v-if="vote.poll.agendaItem?.meeting" caption>
-                {{ vote.poll.agendaItem.meeting.name }} | {{ vote.poll.agendaItem.meeting.date }}
+              <q-item-label lines="2" class="text-body2">
+                {{ vote.poll.agendaItem?.name ?? vote.poll.name }}
+              </q-item-label>
+              <q-item-label v-if="vote.poll.agendaItem?.meeting" caption lines="1">
+                {{ shortMeeting(vote.poll.agendaItem.meeting.name) }} | {{ vote.poll.agendaItem.meeting.date }}
               </q-item-label>
             </q-item-section>
-            <q-item-section side class="row items-center no-wrap q-gutter-xs">
+            <q-item-section side top class="column items-end q-gutter-xs q-pt-xs">
               <q-badge
                 :color="voteChoiceLabel[vote.voted]?.color ?? 'grey'"
-                :label="voteChoiceLabel[vote.voted]?.label ?? vote.voted"
+                :label="voteChoiceFull[vote.voted] ?? vote.voted"
+                style="font-size: 10px"
               />
               <VoteBadge :result="vote.poll.result" />
             </q-item-section>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSyncStore } from '../stores/sync'
 
 const sync = useSyncStore()
 
 const running = computed(() => sync.status?.running ?? false)
+const triggering = ref(false)
 
 const tooltip = computed(() => {
   const s = sync.status
@@ -21,11 +22,28 @@ const tooltip = computed(() => {
   }
   return parts.join(' - ')
 })
+
+async function onTrigger() {
+  triggering.value = true
+  try {
+    await sync.triggerSync()
+  } catch {
+    // ignore – already running or backend unreachable
+  } finally {
+    triggering.value = false
+  }
+}
 </script>
 
 <template>
-  <q-btn flat round :icon="running ? 'sync' : 'cloud_done'" :class="{ 'sync-spinning': running }">
-    <q-tooltip>{{ tooltip }}</q-tooltip>
+  <q-btn
+    flat round
+    :icon="running ? 'sync' : 'cloud_done'"
+    :class="{ 'sync-spinning': running }"
+    @click="onTrigger"
+    :disable="running || triggering"
+  >
+    <q-tooltip>{{ tooltip }}<template v-if="!running"><br>Click to sync</template></q-tooltip>
   </q-btn>
 </template>
 

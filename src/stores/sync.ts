@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { fetchSyncStatus } from '../api'
+import { fetchSyncStatus, triggerSync as apiTriggerSync } from '../api'
 import type { SyncStatus } from '../types'
 
 export const useSyncStore = defineStore('sync', () => {
@@ -28,5 +28,14 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  return { status, startPolling, stopPolling }
+  async function triggerSync(town?: string) {
+    const result = await apiTriggerSync(town)
+    // Start faster polling to show progress
+    if (intervalId) clearInterval(intervalId)
+    intervalId = setInterval(poll, 3_000)
+    await poll()
+    return result
+  }
+
+  return { status, startPolling, stopPolling, triggerSync }
 })

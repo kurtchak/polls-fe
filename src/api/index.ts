@@ -52,7 +52,18 @@ export async function fetchClubSwitchers(city: string): Promise<Politician[]> {
   return data
 }
 
+export async function addTown(ref: string, name: string, source: string = 'DM'): Promise<{ status: string; ref: string; name: string; source: string }> {
+  const { data } = await api.post('/cities', { ref, name, source })
+  return data
+}
+
 export async function fetchSyncStatus(): Promise<SyncStatus> {
   const { data } = await api.get<SyncStatus>('/sync/status')
+  return data
+}
+
+export async function triggerSync(town?: string): Promise<{ status: string; message: string }> {
+  const path = town ? `/sync/trigger/${town}` : '/sync/trigger'
+  const { data } = await api.post<{ status: string; message: string }>(path)
   return data
 }

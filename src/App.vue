@@ -2,11 +2,13 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSyncStore } from './stores/sync'
+import { useNavigationStore } from './stores/navigation'
 import SyncIndicator from './components/SyncIndicator.vue'
 
 const route = useRoute()
 const router = useRouter()
 const sync = useSyncStore()
+const nav = useNavigationStore()
 
 onMounted(() => sync.startPolling())
 onUnmounted(() => sync.stopPolling())
@@ -14,10 +16,13 @@ onUnmounted(() => sync.stopPolling())
 const showBack = computed(() => route.name !== 'home')
 
 const title = computed(() => {
-  const city = route.params.city as string | undefined
-  if (city) return city.charAt(0).toUpperCase() + city.slice(1)
-  if (route.name === 'switchers') return 'Prezliekači'
-  return 'Komunálne hlasovania'
+  const city = (route.params.city as string) || nav.selectedTown?.name
+  const season = (route.params.season as string) || nav.selectedSeason?.ref
+  if (!city) return 'Komunálne hlasovania'
+  const cityName = city.charAt(0).toUpperCase() + city.slice(1)
+  if (route.name === 'switchers') return `${cityName} › Prezliekači`
+  if (season) return `${cityName} › ${season}`
+  return cityName
 })
 
 function goBack() {

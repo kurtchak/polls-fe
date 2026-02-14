@@ -2,11 +2,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchMember, fetchMemberVotes } from '../api'
+import { useNavigationStore } from '../stores/navigation'
 import type { CouncilMember, MemberVote } from '../types'
 import VoteBadge from '../components/VoteBadge.vue'
 
 const route = useRoute()
 const router = useRouter()
+const nav = useNavigationStore()
 const memberRef = route.params.ref as string
 
 const member = ref<CouncilMember | null>(null)
@@ -55,6 +57,20 @@ function shortMeeting(name: string): string {
     .replace(/Mestského zastupiteľstva mesta \S+/, '')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+function goToMeeting(meeting: { date: string }) {
+  const city = nav.selectedTown?.ref
+  const institution = nav.institution
+  const season = member.value?.season || member.value?.club?.season || nav.selectedSeason?.ref
+  if (!city || !season) return
+  const [d, m, y] = meeting.date.split('.')
+  const apiDate = `${y}-${m}-${d}`
+  router.push({
+    name: 'polls',
+    params: { city, institution, season },
+    query: { date: apiDate }
+  })
 }
 
 onMounted(async () => {
@@ -200,7 +216,10 @@ onMounted(async () => {
                     {{ vote.poll.agendaItem?.name ?? vote.poll.name }}
                   </div>
                   <div v-if="vote.poll.agendaItem?.meeting" class="text-caption text-grey">
-                    {{ shortMeeting(vote.poll.agendaItem.meeting.name) }} | {{ vote.poll.agendaItem.meeting.date }}
+                    <a
+                      class="meeting-link"
+                      @click.stop="goToMeeting(vote.poll.agendaItem!.meeting!)"
+                    >{{ shortMeeting(vote.poll.agendaItem.meeting.name) }} | {{ vote.poll.agendaItem.meeting.date }}</a>
                   </div>
                 </div>
                 <div class="column items-end q-gutter-xs q-ml-sm" style="flex-shrink: 0">
@@ -244,5 +263,13 @@ onMounted(async () => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.meeting-link {
+  color: #1976d2;
+  cursor: pointer;
+  text-decoration: none;
+}
+.meeting-link:hover {
+  text-decoration: underline;
 }
 </style>

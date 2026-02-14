@@ -76,6 +76,7 @@ export interface CouncilMember {
   otherFunctions: string | null
   nominee: string[]
   club: ClubInfo | null
+  season?: string
 }
 
 export interface ClubInfo {

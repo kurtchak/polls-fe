@@ -11,8 +11,14 @@ export async function fetchSeasons(city: string, institution: string): Promise<S
   return data
 }
 
-export async function fetchPolls(city: string, institution: string, season: string): Promise<Poll[]> {
-  const { data } = await api.get<Poll[]>(`/${city}/${institution}/${season}/polls`)
+export async function fetchPolls(
+  city: string, institution: string, season: string,
+  dateFrom?: string, dateTo?: string
+): Promise<Poll[]> {
+  const path = dateFrom && dateTo
+    ? `/${city}/${institution}/${season}/polls/${dateFrom}/${dateTo}`
+    : `/${city}/${institution}/${season}/polls`
+  const { data } = await api.get<Poll[]>(path)
   return data
 }
 

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchMember, fetchMemberVotes } from '../api'
 import type { CouncilMember, MemberVote } from '../types'
 import VoteBadge from '../components/VoteBadge.vue'
 
 const route = useRoute()
+const router = useRouter()
 const memberRef = route.params.ref as string
 
 const member = ref<CouncilMember | null>(null)
@@ -190,7 +191,7 @@ onMounted(async () => {
             flat
             clickable
             class="vote-card"
-            :to="{ name: 'poll-detail', params: { ref: vote.poll.ref } }"
+            @click="router.push({ name: 'poll-detail', params: { ref: vote.poll.ref } })"
           >
             <q-card-section class="q-py-sm q-px-md">
               <div class="row items-start no-wrap">

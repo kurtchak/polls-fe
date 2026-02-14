@@ -9,6 +9,12 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
+      path: '/:city/:institution',
+      name: 'seasons',
+      component: () => import('../views/SeasonsView.vue'),
+      props: true,
+    },
+    {
       path: '/:city/:institution/:season/polls',
       name: 'polls',
       component: () => import('../views/PollsView.vue'),

@@ -93,6 +93,17 @@ export interface MemberVote {
   }
 }
 
+export interface SyncStatus {
+  running: boolean
+  currentTown: string | null
+  currentSeason: string | null
+  currentPhase: string | null
+  totalMeetings: number
+  processedMeetings: number
+  startedAt: string | null
+  lastCompletedAt: string | null
+}
+
 export interface Politician {
   name: string
   titles: string | null

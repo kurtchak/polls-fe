@@ -1,5 +1,5 @@
 import api from './client'
-import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote } from '../types'
+import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote, SyncStatus } from '../types'
 
 export async function fetchTowns(): Promise<Town[]> {
   const { data } = await api.get<Town[]>('/cities')
@@ -43,5 +43,10 @@ export async function fetchPartySwitchers(city: string): Promise<Politician[]> {
 
 export async function fetchClubSwitchers(city: string): Promise<Politician[]> {
   const { data } = await api.get<Politician[]>(`/politicians/${city}/club-switchers`)
+  return data
+}
+
+export async function fetchSyncStatus(): Promise<SyncStatus> {
+  const { data } = await api.get<SyncStatus>('/sync/status')
   return data
 }

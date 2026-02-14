@@ -3,10 +3,12 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchTowns, fetchSeasons } from '../api'
 import { useNavigationStore } from '../stores/navigation'
+import { useSyncStore } from '../stores/sync'
 import type { Town, Season } from '../types'
 
 const router = useRouter()
 const nav = useNavigationStore()
+const sync = useSyncStore()
 
 const towns = ref<Town[]>([])
 const seasons = ref<Season[]>([])
@@ -59,6 +61,9 @@ function onSeasonClick(season: Season) {
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ town.name }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-if="sync.status?.running && sync.status?.currentTown === town.ref" side>
+            <q-spinner-dots size="20px" color="primary" />
           </q-item-section>
           <q-item-section side>
             <q-icon name="chevron_right" />

@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useSyncStore } from './stores/sync'
+import SyncIndicator from './components/SyncIndicator.vue'
 
 const route = useRoute()
 const router = useRouter()
+const sync = useSyncStore()
+
+onMounted(() => sync.startPolling())
+onUnmounted(() => sync.stopPolling())
 
 const showBack = computed(() => route.name !== 'home')
 
@@ -30,6 +36,7 @@ function goBack() {
         <q-btn v-if="showBack" flat round icon="arrow_back" @click="goBack" />
         <q-toolbar-title>{{ title }}</q-toolbar-title>
         <q-btn v-if="showBack" flat round icon="home" @click="router.push({ name: 'home' })" />
+        <SyncIndicator />
       </q-toolbar>
     </q-header>
 

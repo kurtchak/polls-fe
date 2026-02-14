@@ -8,6 +8,11 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
+    location /manifest.webmanifest {
+        types { application/manifest+json webmanifest; }
+        default_type application/manifest+json;
+    }
+
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";

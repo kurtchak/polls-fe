@@ -83,7 +83,7 @@ onMounted(async () => {
         <!-- Left column: photo, season, contact -->
         <div class="col-auto column items-center">
           <q-avatar size="100px" class="q-mb-xs">
-            <img v-if="member.picture" :src="member.picture" />
+            <img v-if="member.picture" :src="member.picture" style="object-fit: cover; width: 100%; height: 100%" />
             <q-icon v-else name="person" size="60px" color="grey-5" />
           </q-avatar>
           <q-badge
@@ -183,13 +183,13 @@ onMounted(async () => {
       <q-spinner-dots v-if="votesLoading" size="30px" color="primary" />
 
       <template v-else-if="votes.length">
-        <q-list bordered separator dense>
+        <q-list dense class="vote-list">
           <q-item
             v-for="(vote, i) in votes"
             :key="i"
             clickable
             :to="{ name: 'poll-detail', params: { ref: vote.poll.ref } }"
-            class="q-py-xs"
+            class="vote-item q-py-xs"
           >
             <q-item-section>
               <q-item-label lines="2" class="text-body2">
@@ -217,3 +217,16 @@ onMounted(async () => {
     </template>
   </q-page>
 </template>
+
+<style scoped>
+.vote-list {
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.vote-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.vote-item:last-child {
+  border-bottom: none;
+}
+</style>

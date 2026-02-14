@@ -35,6 +35,13 @@ const voteGroups = computed(() => {
 
 const hasVoters = computed(() => voteGroups.value.some(g => g.voters.length > 0))
 
+function shortMeeting(name: string): string {
+  return name
+    .replace(/Mestského zastupiteľstva mesta \S+/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -50,13 +57,13 @@ onMounted(async () => {
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
 
     <template v-else-if="poll">
-      <div class="row items-start justify-between q-mb-sm">
-        <div class="text-h6 col">{{ poll.agendaItem?.name ?? poll.name }}</div>
-        <VoteBadge :result="poll.result" />
+      <div class="q-mb-sm">
+        <VoteBadge :result="poll.result" class="float-badge" />
+        <div class="text-h6">{{ poll.agendaItem?.name ?? poll.name }}</div>
       </div>
 
       <div v-if="poll.agendaItem?.meeting" class="text-caption text-grey q-mb-sm">
-        {{ poll.agendaItem.meeting.name }} | {{ poll.agendaItem.meeting.date }}
+        {{ shortMeeting(poll.agendaItem.meeting.name) }} | {{ poll.agendaItem.meeting.date }}
       </div>
 
       <VoteBar :votes-count="poll.votesCount" :voters="poll.voters" class="q-mb-md" />
@@ -67,16 +74,17 @@ onMounted(async () => {
             <q-badge :color="group.color" :label="group.label" />
             <span class="text-caption text-grey q-ml-sm">({{ group.count }})</span>
           </div>
-          <q-list dense bordered separator>
+          <q-list dense class="voter-list">
             <q-item
               v-for="voter in group.voters"
               :key="voter.ref"
               clickable
               :to="{ name: 'member-detail', params: { ref: voter.ref } }"
+              class="voter-item"
             >
               <q-item-section avatar>
                 <q-avatar size="32px">
-                  <img v-if="voter.picture" :src="voter.picture" />
+                  <img v-if="voter.picture" :src="voter.picture" class="avatar-img" />
                   <q-icon v-else name="person" size="20px" color="grey-5" />
                 </q-avatar>
               </q-item-section>
@@ -96,3 +104,25 @@ onMounted(async () => {
     </template>
   </q-page>
 </template>
+
+<style scoped>
+.float-badge {
+  float: right;
+  margin: 4px 0 4px 12px;
+}
+.voter-list {
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.voter-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.voter-item:last-child {
+  border-bottom: none;
+}
+.avatar-img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+</style>

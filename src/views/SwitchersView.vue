@@ -40,12 +40,12 @@ function uniqueParties(p: Politician): string[] {
 
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
 
-    <q-list v-else bordered separator>
+    <q-list v-else class="switcher-list">
       <template v-if="tab === 'party'">
-        <q-item v-for="(p, idx) in partySwitchers" :key="idx">
+        <q-item v-for="(p, idx) in partySwitchers" :key="idx" class="switcher-item">
           <q-item-section avatar>
             <q-avatar size="40px">
-              <img v-if="p.picture" :src="p.picture" />
+              <img v-if="p.picture" :src="p.picture" class="avatar-img" />
               <q-icon v-else name="person" size="24px" color="grey-5" />
             </q-avatar>
           </q-item-section>
@@ -70,10 +70,10 @@ function uniqueParties(p: Politician): string[] {
       </template>
 
       <template v-else>
-        <q-item v-for="(p, idx) in clubSwitchers" :key="idx">
+        <q-item v-for="(p, idx) in clubSwitchers" :key="idx" class="switcher-item">
           <q-item-section avatar>
             <q-avatar size="40px">
-              <img v-if="p.picture" :src="p.picture" />
+              <img v-if="p.picture" :src="p.picture" class="avatar-img" />
               <q-icon v-else name="person" size="24px" color="grey-5" />
             </q-avatar>
           </q-item-section>
@@ -91,3 +91,21 @@ function uniqueParties(p: Politician): string[] {
     </q-list>
   </q-page>
 </template>
+
+<style scoped>
+.switcher-list {
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.switcher-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.switcher-item:last-child {
+  border-bottom: none;
+}
+.avatar-img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+</style>

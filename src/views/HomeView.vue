@@ -58,7 +58,7 @@ function onSeasonClick(season: Season) {
 
     <template v-else-if="step === 'town'">
       <div class="text-h6 q-mb-md">Vyberte mesto</div>
-      <q-list bordered separator>
+      <q-list class="home-list">
         <q-item v-for="town in towns" :key="town.ref" clickable v-ripple @click="onTownClick(town)">
           <q-item-section avatar>
             <q-icon name="location_city" color="primary" />
@@ -78,7 +78,7 @@ function onSeasonClick(season: Season) {
 
     <template v-else>
       <div class="text-h6 q-mb-md">Volebné obdobie</div>
-      <q-list bordered separator>
+      <q-list class="home-list">
         <q-item v-for="season in seasons" :key="season.ref" clickable v-ripple @click="onSeasonClick(season)">
           <q-item-section avatar>
             <q-icon name="event" color="primary" />
@@ -104,3 +104,16 @@ function onSeasonClick(season: Season) {
     </template>
   </q-page>
 </template>
+
+<style scoped>
+.home-list {
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.home-list :deep(.q-item) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.home-list :deep(.q-item:last-child) {
+  border-bottom: none;
+}
+</style>

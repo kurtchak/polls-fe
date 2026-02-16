@@ -9,6 +9,7 @@ export interface Season {
   name: string
   meetingCount?: number
   pollCount?: number
+  incompleteMeetings?: number
 }
 
 export interface VotesCount {

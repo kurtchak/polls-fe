@@ -16,5 +16,10 @@ export const useNavigationStore = defineStore('navigation', () => {
     selectedSeason.value = season
   }
 
-  return { selectedTown, selectedSeason, institution, selectTown, selectSeason }
+  function clearSelection() {
+    selectedTown.value = null
+    selectedSeason.value = null
+  }
+
+  return { selectedTown, selectedSeason, institution, selectTown, selectSeason, clearSelection }
 })

@@ -75,6 +75,9 @@ function onSeasonClick(season: Season) {
             <q-item-label>{{ season.name }}</q-item-label>
             <q-item-label v-if="season.meetingCount || season.pollCount" caption>
               {{ season.meetingCount }} zasadnutí, {{ season.pollCount }} hlasovaní
+              <span v-if="season.incompleteMeetings" class="text-orange">
+                ({{ season.incompleteMeetings }} nekompletných)
+              </span>
             </q-item-label>
             <q-item-label v-if="sync.status?.running && sync.status?.currentTown === city && sync.status?.currentSeason === season.ref && sync.status?.currentPhase === 'meetings'" caption class="text-primary">
               synchronizujem {{ sync.status.processedMeetings }} / {{ sync.status.totalMeetings }}
@@ -88,7 +91,7 @@ function onSeasonClick(season: Season) {
           </q-item-section>
         </q-item>
       </q-list>
-      <q-btn flat color="primary" icon="arrow_back" label="Späť" class="q-mt-md" @click="router.push({ name: 'home' })" />
+      <q-btn flat color="primary" icon="arrow_back" label="Späť" class="q-mt-md" @click="nav.clearSelection(); router.push({ name: 'home' })" />
     </template>
   </q-page>
 </template>

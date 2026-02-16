@@ -16,6 +16,7 @@ onUnmounted(() => sync.stopPolling())
 const showBack = computed(() => route.name !== 'home')
 
 const title = computed(() => {
+  if (route.name === 'home') return 'Komunálne hlasovania'
   const city = (route.params.city as string) || nav.selectedTown?.name
   const season = (route.params.season as string) || nav.selectedSeason?.ref
   if (!city) return 'Komunálne hlasovania'
@@ -40,7 +41,7 @@ function goBack() {
       <q-toolbar>
         <q-btn v-if="showBack" flat round icon="arrow_back" @click="goBack" />
         <q-toolbar-title>{{ title }}</q-toolbar-title>
-        <q-btn v-if="showBack" flat round icon="home" @click="router.push({ name: 'home' })" />
+        <q-btn v-if="showBack" flat round icon="home" @click="nav.clearSelection(); router.push({ name: 'home' })" />
         <SyncIndicator />
       </q-toolbar>
     </q-header>

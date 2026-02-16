@@ -26,7 +26,8 @@ onMounted(async () => {
       const town = towns.find(t => t.ref === city)
       if (town) nav.selectTown(town)
     }
-    seasons.value = await fetchSeasons(city, institution)
+    seasons.value = (await fetchSeasons(city, institution))
+      .sort((a, b) => b.ref.localeCompare(a.ref))
   } finally {
     loading.value = false
   }
@@ -67,9 +68,16 @@ function onSeasonClick(season: Season) {
         </q-btn>
       </div>
       <q-list class="home-list">
-        <q-item v-for="season in seasons" :key="season.ref" clickable v-ripple @click="onSeasonClick(season)">
+        <q-item
+          v-for="(season, index) in seasons" :key="season.ref"
+          clickable v-ripple @click="onSeasonClick(season)"
+          :class="{ 'current-season': index === 0 }"
+        >
           <q-item-section avatar>
-            <q-icon name="event" color="primary" />
+            <q-icon
+              :name="season.meetingCount && !season.incompleteMeetings ? 'check_circle' : 'event'"
+              :color="season.meetingCount && !season.incompleteMeetings ? 'green' : 'primary'"
+            />
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ season.name }}</q-item-label>
@@ -78,6 +86,9 @@ function onSeasonClick(season: Season) {
               <span v-if="season.incompleteMeetings" class="text-orange">
                 ({{ season.incompleteMeetings }} nekompletných)
               </span>
+            </q-item-label>
+            <q-item-label v-if="!season.meetingCount" caption class="text-grey">
+              zatiaľ bez dát
             </q-item-label>
             <q-item-label v-if="sync.status?.running && sync.status?.currentTown === city && sync.status?.currentSeason === season.ref && sync.status?.currentPhase === 'meetings'" caption class="text-primary">
               synchronizujem {{ sync.status.processedMeetings }} / {{ sync.status.totalMeetings }}
@@ -91,7 +102,6 @@ function onSeasonClick(season: Season) {
           </q-item-section>
         </q-item>
       </q-list>
-      <q-btn flat color="primary" icon="arrow_back" label="Späť" class="q-mt-md" @click="nav.clearSelection(); router.push({ name: 'home' })" />
     </template>
   </q-page>
 </template>
@@ -106,5 +116,8 @@ function onSeasonClick(season: Season) {
 }
 .home-list :deep(.q-item:last-child) {
   border-bottom: none;
+}
+.current-season {
+  background: rgba(25, 118, 210, 0.06);
 }
 </style>

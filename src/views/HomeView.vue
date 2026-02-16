@@ -51,7 +51,7 @@ function updateAvailableTowns() {
 onMounted(async () => {
   loading.value = true
   try {
-    towns.value = await fetchTowns()
+    towns.value = (await fetchTowns()).sort((a, b) => a.name.localeCompare(b.name, 'sk'))
     updateAvailableTowns()
   } finally {
     loading.value = false
@@ -81,7 +81,7 @@ async function onAddTown() {
   adding.value = true
   try {
     await addTown(newTownRef.value, newTownName.value, 'DM')
-    towns.value = await fetchTowns()
+    towns.value = (await fetchTowns()).sort((a, b) => a.name.localeCompare(b.name, 'sk'))
     updateAvailableTowns()
     showAddDialog.value = false
     selectedDmTown.value = null
@@ -125,9 +125,6 @@ async function onSyncTown(townRef: string, event: Event) {
             <q-item-label v-if="town.lastSyncDate" caption>
               Sync: {{ town.lastSyncDate }}
             </q-item-label>
-          </q-item-section>
-          <q-item-section v-if="sync.status?.running && sync.status?.currentTown === town.ref" side>
-            <q-spinner-dots size="20px" color="primary" />
           </q-item-section>
           <q-item-section side>
             <q-btn

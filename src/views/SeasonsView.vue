@@ -64,6 +64,9 @@ async function onDiscoverOlder() {
     // Refresh seasons list
     seasons.value = (await fetchSeasons(city, institution))
       .sort((a, b) => b.ref.localeCompare(a.ref))
+    // Trigger full sync to load members and complete data
+    await triggerSync(city)
+    sync.startPolling()
   } catch {
     discoveryMessage.value = 'Chyba pri hľadaní staršej sezóny'
     discoveryColor.value = 'red'

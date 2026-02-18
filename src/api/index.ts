@@ -77,3 +77,15 @@ export async function fetchDataSourceSummary(): Promise<DataSourceSummary> {
   const { data } = await api.get<DataSourceSummary>('/admin/data-sources')
   return data
 }
+
+export interface DiscoveryResult {
+  status: 'found' | 'not_found' | 'exists' | 'error'
+  seasonRef: string | null
+  meetingCount: number
+  message: string
+}
+
+export async function discoverOlderSeason(city: string, institution: string): Promise<DiscoveryResult> {
+  const { data } = await api.post<DiscoveryResult>(`/${city}/${institution}/discover-older-season`)
+  return data
+}

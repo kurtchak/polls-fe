@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fetchTowns, fetchSeasons, triggerSync } from '../api'
+import { fetchTowns, fetchSeasons, triggerSync, discoverOlderSeason } from '../api'
+import type { DiscoveryResult } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
 import type { Season } from '../types'
@@ -16,6 +17,9 @@ const institution = route.params.institution as string
 
 const seasons = ref<Season[]>([])
 const loading = ref(false)
+const discovering = ref(false)
+const discoveryMessage = ref('')
+const discoveryColor = ref('grey')
 
 onMounted(async () => {
   loading.value = true
@@ -48,6 +52,24 @@ function onSeasonClick(season: Season) {
     name: 'polls',
     params: { city, institution, season: season.ref },
   })
+}
+
+async function onDiscoverOlder() {
+  discovering.value = true
+  discoveryMessage.value = ''
+  try {
+    const result: DiscoveryResult = await discoverOlderSeason(city, institution)
+    discoveryMessage.value = result.message
+    discoveryColor.value = result.status === 'found' ? 'green' : result.status === 'not_found' ? 'orange' : 'grey'
+    // Refresh seasons list
+    seasons.value = (await fetchSeasons(city, institution))
+      .sort((a, b) => b.ref.localeCompare(a.ref))
+  } catch {
+    discoveryMessage.value = 'Chyba pri hľadaní staršej sezóny'
+    discoveryColor.value = 'red'
+  } finally {
+    discovering.value = false
+  }
 }
 </script>
 
@@ -102,6 +124,18 @@ function onSeasonClick(season: Season) {
           </q-item-section>
         </q-item>
       </q-list>
+
+      <div class="q-mt-md text-center">
+        <q-btn
+          outline color="primary" icon="history"
+          label="Nájsť staršiu sezónu"
+          :loading="discovering"
+          @click="onDiscoverOlder"
+        />
+        <div v-if="discoveryMessage" class="q-mt-sm text-caption" :class="`text-${discoveryColor}`">
+          {{ discoveryMessage }}
+        </div>
+      </div>
     </template>
   </q-page>
 </template>

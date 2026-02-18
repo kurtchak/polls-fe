@@ -1,5 +1,5 @@
 import api from './client'
-import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote, SyncStatus } from '../types'
+import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote, SyncStatus, SyncLog, DataSourceSummary } from '../types'
 
 export async function fetchTowns(): Promise<Town[]> {
   const { data } = await api.get<Town[]>('/cities')
@@ -65,5 +65,15 @@ export async function fetchSyncStatus(): Promise<SyncStatus> {
 export async function triggerSync(town?: string): Promise<{ status: string; message: string }> {
   const path = town ? `/sync/trigger/${town}` : '/sync/trigger'
   const { data } = await api.post<{ status: string; message: string }>(path)
+  return data
+}
+
+export async function fetchSyncLogs(): Promise<SyncLog[]> {
+  const { data } = await api.get<SyncLog[]>('/admin/sync-log')
+  return data
+}
+
+export async function fetchDataSourceSummary(): Promise<DataSourceSummary> {
+  const { data } = await api.get<DataSourceSummary>('/admin/data-sources')
   return data
 }

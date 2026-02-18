@@ -42,6 +42,9 @@ function goBack() {
         <q-btn v-if="showBack" flat round icon="arrow_back" @click="goBack" />
         <q-toolbar-title>{{ title }}</q-toolbar-title>
         <q-btn v-if="showBack" flat round icon="home" @click="nav.clearSelection(); router.push({ name: 'home' })" />
+        <q-btn flat round icon="storage" @click="router.push({ name: 'data-sources' })">
+          <q-tooltip>Zdroje dat</q-tooltip>
+        </q-btn>
         <SyncIndicator />
       </q-toolbar>
     </q-header>

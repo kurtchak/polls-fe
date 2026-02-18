@@ -117,3 +117,31 @@ export interface Politician {
   partyNominees: string[]
   club: string | null
 }
+
+export interface SyncLog {
+  id: number
+  townRef: string
+  seasonRef: string | null
+  institution: string | null
+  operation: string
+  source: string
+  success: boolean
+  recordCount: number
+  errorMessage: string | null
+  durationMs: number
+  timestamp: string
+}
+
+export interface DataSourceRow {
+  town: string
+  season: string
+  source: string | null
+  count?: number
+}
+
+export interface DataSourceSummary {
+  seasons: DataSourceRow[]
+  meetings: DataSourceRow[]
+  members: DataSourceRow[]
+  polls: DataSourceRow[]
+}

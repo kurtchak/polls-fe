@@ -42,6 +42,11 @@ const router = createRouter({
       component: () => import('../views/SwitchersView.vue'),
       props: true,
     },
+    {
+      path: '/admin/data-sources',
+      name: 'data-sources',
+      component: () => import('../views/DataSourcesView.vue'),
+    },
   ],
 })
 

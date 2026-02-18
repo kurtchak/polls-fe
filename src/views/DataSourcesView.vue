@@ -34,12 +34,12 @@ function sourceColor(source: string | null): string {
 onMounted(async () => {
   loading.value = true
   try {
-    const [s, l] = await Promise.all([
+    const [s, l] = await Promise.allSettled([
       fetchDataSourceSummary(),
       fetchSyncLogs(),
     ])
-    summary.value = s
-    logs.value = l
+    if (s.status === 'fulfilled') summary.value = s.value
+    if (l.status === 'fulfilled') logs.value = l.value
   } finally {
     loading.value = false
   }

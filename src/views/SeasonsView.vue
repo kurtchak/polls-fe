@@ -37,15 +37,6 @@ onMounted(async () => {
   }
 })
 
-async function onSync() {
-  try {
-    await triggerSync(city)
-    sync.startPolling()
-  } catch {
-    // ignore
-  }
-}
-
 function onSeasonClick(season: Season) {
   nav.selectSeason(season)
   router.push({
@@ -81,17 +72,7 @@ async function onDiscoverOlder() {
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
 
     <template v-else>
-      <div class="row items-center q-mb-md">
-        <div class="text-h6">Volebné obdobie</div>
-        <q-space />
-        <q-btn
-          flat round icon="sync" color="primary"
-          :loading="sync.status?.running && sync.status?.currentTown === city"
-          @click="onSync"
-        >
-          <q-tooltip>Synchronizovať {{ city }}</q-tooltip>
-        </q-btn>
-      </div>
+      <div class="text-h6 q-mb-md">Volebné obdobie</div>
       <q-list class="home-list">
         <q-item
           v-for="(season, index) in seasons" :key="season.ref"

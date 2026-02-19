@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchTowns, addTown, triggerSync } from '../api'
+import { fetchTowns, addTown } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
 import type { Town } from '../types'
@@ -95,8 +95,7 @@ async function onAddTown() {
 async function onSyncTown(townRef: string, event: Event) {
   event.stopPropagation()
   try {
-    await triggerSync(townRef)
-    sync.startPolling()
+    await sync.triggerSync(townRef)
   } catch {
     // already running
   }

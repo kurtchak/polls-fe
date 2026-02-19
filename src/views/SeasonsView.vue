@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fetchTowns, fetchSeasons, triggerSync, discoverOlderSeason } from '../api'
+import { fetchTowns, fetchSeasons, discoverOlderSeason } from '../api'
 import type { DiscoveryResult } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
@@ -56,8 +56,7 @@ async function onDiscoverOlder() {
     seasons.value = (await fetchSeasons(city, institution))
       .sort((a, b) => b.ref.localeCompare(a.ref))
     // Trigger full sync to load members and complete data
-    await triggerSync(city)
-    sync.startPolling()
+    await sync.triggerSync(city)
   } catch {
     discoveryMessage.value = 'Chyba pri hľadaní staršej sezóny'
     discoveryColor.value = 'red'

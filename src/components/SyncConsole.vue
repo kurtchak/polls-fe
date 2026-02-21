@@ -62,9 +62,10 @@ const summaryLines = computed<SummaryLine[]>(() => {
 
   const lines: SummaryLine[] = []
   for (const [key, evts] of groups) {
-    const town = evts[0].town
-    const season = evts[0].season
-    const lastEventTs = evts[evts.length - 1].timestamp
+    if (evts.length === 0) continue
+    const town = evts[0]!.town
+    const season = evts[0]!.season
+    const lastEventTs = evts[evts.length - 1]!.timestamp
 
     // Currently syncing this exact town/season → hourglass
     const currentlyRunning = sync.isRunning
@@ -116,7 +117,7 @@ const summaryLines = computed<SummaryLine[]>(() => {
       // Only INFO events — sync finished for this group without issues
       icon = 'check_circle'
       color = 'green'
-      message = evts[evts.length - 1].message
+      message = evts[evts.length - 1]!.message
     }
 
     lines.push({ key, town, season, icon, color, message, running: false, lastEventTs })

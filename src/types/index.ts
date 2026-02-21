@@ -145,3 +145,24 @@ export interface DataSourceSummary {
   members: DataSourceRow[]
   polls: DataSourceRow[]
 }
+
+export interface SyncEvent {
+  id: number
+  timestamp: string
+  level: 'INFO' | 'WARN' | 'ERROR' | 'SUCCESS'
+  town: string
+  season: string
+  phase: string
+  message: string
+}
+
+export interface LastRunSummary {
+  events: SyncEvent[]
+  startedAt: string | null
+  completedAt: string | null
+  durationMs: number
+  townsSynced: number
+  meetingsSynced: number
+  meetingsFailed: number
+  meetingsSkipped: number
+}

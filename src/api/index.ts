@@ -1,5 +1,5 @@
 import api from './client'
-import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote, SyncStatus, SyncLog, DataSourceSummary } from '../types'
+import type { Town, Season, Poll, PollDetail, CouncilMember, Politician, MemberVote, SyncStatus, SyncLog, DataSourceSummary, SyncEvent, LastRunSummary } from '../types'
 
 export async function fetchTowns(): Promise<Town[]> {
   const { data } = await api.get<Town[]>('/cities')
@@ -87,5 +87,24 @@ export interface DiscoveryResult {
 
 export async function discoverOlderSeason(city: string, institution: string): Promise<DiscoveryResult> {
   const { data } = await api.post<DiscoveryResult>(`/${city}/${institution}/discover-older-season`)
+  return data
+}
+
+export function subscribeSyncEvents(onEvent: (event: SyncEvent) => void): EventSource {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  const es = new EventSource(`${baseUrl}/sync/events`)
+  es.addEventListener('sync', (e: MessageEvent) => {
+    try {
+      const event: SyncEvent = JSON.parse(e.data)
+      onEvent(event)
+    } catch {
+      // ignore parse errors
+    }
+  })
+  return es
+}
+
+export async function fetchLastRun(): Promise<LastRunSummary> {
+  const { data } = await api.get<LastRunSummary>('/sync/last-run')
   return data
 }

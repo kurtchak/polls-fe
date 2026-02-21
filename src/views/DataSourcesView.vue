@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { fetchDataSourceSummary, fetchSyncLogs } from '../api'
-import type { DataSourceSummary, DataSourceRow, SyncLog } from '../types'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { fetchDataSourceSummary, fetchSyncLogs, fetchSyncStatus, triggerSync, subscribeSyncEvents, fetchLastRun } from '../api'
+import type { DataSourceSummary, DataSourceRow, SyncLog, SyncEvent, LastRunSummary, SyncStatus } from '../types'
 
-const tab = ref<'sources' | 'log'>('sources')
+const tab = ref<'sources' | 'log' | 'console'>('sources')
 const loading = ref(false)
 
 // Data sources
@@ -15,6 +15,16 @@ const logs = ref<SyncLog[]>([])
 const logTownFilter = ref('')
 const logOpFilter = ref('')
 const logResultFilter = ref('')
+
+// Console
+const consoleEvents = ref<SyncEvent[]>([])
+const lastRun = ref<LastRunSummary | null>(null)
+const syncStatus = ref<SyncStatus | null>(null)
+const consoleRef = ref<HTMLDivElement | null>(null)
+let eventSource: EventSource | null = null
+let statusInterval: ReturnType<typeof setInterval> | null = null
+
+const isRunning = computed(() => syncStatus.value?.running ?? false)
 
 const sourceColors: Record<string, string> = {
   DM: 'blue-7',
@@ -111,6 +121,100 @@ function formatTs(ts: string | null): string {
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+// --- Console tab ---
+function formatTime(ts: string): string {
+  const d = new Date(ts)
+  return d.toLocaleTimeString('sk')
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return ms + 'ms'
+  const sec = Math.floor(ms / 1000)
+  if (sec < 60) return sec + 's'
+  const min = Math.floor(sec / 60)
+  const remainSec = sec % 60
+  return min + 'min ' + remainSec + 's'
+}
+
+function scrollConsoleToBottom() {
+  nextTick(() => {
+    if (consoleRef.value) {
+      consoleRef.value.scrollTop = consoleRef.value.scrollHeight
+    }
+  })
+}
+
+function startSSE() {
+  if (eventSource) return
+  eventSource = subscribeSyncEvents((event: SyncEvent) => {
+    consoleEvents.value.push(event)
+    // Keep max 500 events in UI
+    if (consoleEvents.value.length > 500) {
+      consoleEvents.value = consoleEvents.value.slice(-300)
+    }
+    scrollConsoleToBottom()
+  })
+}
+
+function stopSSE() {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+  }
+}
+
+async function loadLastRun() {
+  try {
+    lastRun.value = await fetchLastRun()
+    if (lastRun.value.events.length > 0 && consoleEvents.value.length === 0) {
+      consoleEvents.value = lastRun.value.events
+    }
+  } catch {
+    // ignore
+  }
+}
+
+async function pollSyncStatus() {
+  try {
+    syncStatus.value = await fetchSyncStatus()
+  } catch {
+    // ignore
+  }
+}
+
+async function handleTriggerSync() {
+  try {
+    await triggerSync()
+    consoleEvents.value = []
+    await pollSyncStatus()
+  } catch {
+    // ignore
+  }
+}
+
+watch(tab, (newTab) => {
+  if (newTab === 'console') {
+    startSSE()
+    pollSyncStatus()
+    loadLastRun()
+    statusInterval = setInterval(pollSyncStatus, 3000)
+  } else {
+    stopSSE()
+    if (statusInterval) {
+      clearInterval(statusInterval)
+      statusInterval = null
+    }
+  }
+})
+
+onUnmounted(() => {
+  stopSSE()
+  if (statusInterval) {
+    clearInterval(statusInterval)
+    statusInterval = null
+  }
+})
 </script>
 
 <template>
@@ -120,6 +224,7 @@ function capitalize(s: string): string {
     <q-tabs v-model="tab" dense active-color="primary" class="q-mb-md">
       <q-tab name="sources" icon="storage" label="Prehlad zdrojov" />
       <q-tab name="log" icon="history" label="Sync Log" />
+      <q-tab name="console" icon="terminal" label="Konzola" />
     </q-tabs>
 
     <q-spinner-dots v-if="loading" size="40px" color="primary" class="absolute-center" />
@@ -275,6 +380,105 @@ function capitalize(s: string): string {
         </q-card-section>
       </q-card>
     </template>
+
+    <!-- Console Tab -->
+    <template v-else-if="tab === 'console'">
+      <!-- Summary cards -->
+      <div v-if="lastRun" class="row q-gutter-sm q-mb-md">
+        <q-card flat bordered class="col">
+          <q-card-section class="text-center q-pa-sm">
+            <div class="text-h6">{{ lastRun.townsSynced }}</div>
+            <div class="text-caption text-grey">Miest</div>
+          </q-card-section>
+        </q-card>
+        <q-card flat bordered class="col">
+          <q-card-section class="text-center q-pa-sm">
+            <div class="text-h6 text-green">{{ lastRun.meetingsSynced }}</div>
+            <div class="text-caption text-grey">Zasadnuti OK</div>
+          </q-card-section>
+        </q-card>
+        <q-card flat bordered class="col">
+          <q-card-section class="text-center q-pa-sm">
+            <div class="text-h6 text-red">{{ lastRun.meetingsFailed }}</div>
+            <div class="text-caption text-grey">Zlyhanych</div>
+          </q-card-section>
+        </q-card>
+        <q-card flat bordered class="col">
+          <q-card-section class="text-center q-pa-sm">
+            <div class="text-h6 text-orange">{{ lastRun.meetingsSkipped }}</div>
+            <div class="text-caption text-grey">Preskocenych</div>
+          </q-card-section>
+        </q-card>
+        <q-card flat bordered class="col">
+          <q-card-section class="text-center q-pa-sm">
+            <div class="text-h6">{{ formatDuration(lastRun.durationMs) }}</div>
+            <div class="text-caption text-grey">Trvanie</div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Progress bar when running -->
+      <q-linear-progress
+        v-if="isRunning && syncStatus && syncStatus.totalMeetings > 0"
+        :value="syncStatus.processedMeetings / syncStatus.totalMeetings"
+        size="20px"
+        color="green"
+        class="q-mb-md"
+      >
+        <div class="absolute-full flex flex-center">
+          <q-badge color="white" text-color="green" :label="syncStatus.processedMeetings + ' / ' + syncStatus.totalMeetings" />
+        </div>
+      </q-linear-progress>
+
+      <!-- Console output -->
+      <q-card flat bordered class="console-card">
+        <q-card-section class="console-header row items-center q-py-sm">
+          <q-icon
+            :name="isRunning ? 'fiber_manual_record' : 'circle'"
+            :color="isRunning ? 'green' : 'grey'"
+            size="12px"
+            class="q-mr-sm"
+          />
+          <span v-if="isRunning" class="text-weight-medium">
+            Synchronizacia bezi...
+            <span v-if="syncStatus?.currentTown" class="text-caption text-grey q-ml-sm">
+              {{ syncStatus.currentTown }}
+              <template v-if="syncStatus?.currentSeason"> / {{ syncStatus.currentSeason }}</template>
+            </span>
+          </span>
+          <span v-else class="text-weight-medium text-grey">
+            Posledna synchronizacia
+            <span v-if="lastRun?.completedAt" class="text-caption q-ml-sm">{{ formatTs(lastRun.completedAt) }}</span>
+          </span>
+          <q-space />
+          <q-btn
+            flat dense size="sm"
+            icon="play_arrow"
+            label="Sync"
+            color="primary"
+            :disable="isRunning"
+            @click="handleTriggerSync"
+          />
+        </q-card-section>
+        <q-card-section class="console-body">
+          <div ref="consoleRef" class="console-output">
+            <div v-if="consoleEvents.length === 0" class="text-grey-6" style="padding: 20px; text-align: center;">
+              Ziadne eventy. Spustite synchronizaciu.
+            </div>
+            <div
+              v-for="event in consoleEvents"
+              :key="event.id"
+              :class="['console-line', 'level-' + event.level.toLowerCase()]"
+            >
+              <span class="timestamp">[{{ formatTime(event.timestamp) }}]</span>
+              <span class="level">[{{ event.level }}]</span>
+              <span v-if="event.town" class="town">[{{ event.town }}<template v-if="event.season">/{{ event.season }}</template>]</span>
+              <span class="message">{{ event.message }}</span>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </template>
   </q-page>
 </template>
 
@@ -286,4 +490,53 @@ function capitalize(s: string): string {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.console-card {
+  max-height: 600px;
+}
+
+.console-body {
+  padding: 0 !important;
+}
+
+.console-output {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.console-line {
+  white-space: pre-wrap;
+}
+
+.timestamp {
+  color: #858585;
+  margin-right: 6px;
+}
+
+.level {
+  margin-right: 6px;
+}
+
+.town {
+  color: #569cd6;
+  margin-right: 6px;
+}
+
+.level-info .level { color: #858585; }
+.level-info .message { color: #d4d4d4; }
+
+.level-success .level { color: #4ec9b0; }
+.level-success .message { color: #4ec9b0; }
+
+.level-warn .level { color: #dcdcaa; }
+.level-warn .message { color: #dcdcaa; }
+
+.level-error .level { color: #f44747; }
+.level-error .message { color: #f44747; }
 </style>

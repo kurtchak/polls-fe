@@ -5,6 +5,7 @@ import { fetchTowns, fetchSeasons, discoverOlderSeason } from '../api'
 import type { DiscoveryResult } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
+import SyncConsole from '../components/SyncConsole.vue'
 import type { Season } from '../types'
 
 const route = useRoute()
@@ -119,6 +120,8 @@ async function onDiscoverOlder() {
           {{ discoveryMessage }}
         </div>
       </div>
+
+      <SyncConsole :town-filter="city" />
     </template>
   </q-page>
 </template>

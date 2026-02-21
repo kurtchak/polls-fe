@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { fetchTowns, addTown } from '../api'
 import { useNavigationStore } from '../stores/navigation'
 import { useSyncStore } from '../stores/sync'
+import SyncConsole from '../components/SyncConsole.vue'
 import type { Town } from '../types'
 
 const router = useRouter()
@@ -139,6 +140,8 @@ async function onSyncTown(townRef: string, event: Event) {
           </q-item-section>
         </q-item>
       </q-list>
+
+      <SyncConsole />
     </template>
 
     <q-dialog v-model="showAddDialog">

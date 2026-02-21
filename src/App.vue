@@ -10,8 +10,8 @@ const router = useRouter()
 const sync = useSyncStore()
 const nav = useNavigationStore()
 
-onMounted(() => sync.startPolling())
-onUnmounted(() => sync.stopPolling())
+onMounted(() => sync.init())
+onUnmounted(() => { sync.stopPolling(); sync.stopSSE() })
 
 const showBack = computed(() => route.name !== 'home')
 
